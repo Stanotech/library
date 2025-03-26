@@ -26,3 +26,19 @@ class BookDetailView(APIView):
         book = Book.objects.get(id=book_id)
         serializer = BookSerializer(book)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, book_id):
+        book = Book.objects.get(id=book_id)
+        serializer = BookSerializer(book, data=request.data, partial=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, book_id):
+        book = Book.objects.get(id=book_id)
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
