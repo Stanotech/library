@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from datetime import date
 
 from library.models import Book
 from library.serializers import BookSerializer
@@ -14,6 +15,10 @@ class LibraryView(APIView):
     def post(self, request):
         if len(request.data.get("isbn")) != 13:
             return Response({"error": "ISBN must be 13 characters long"}, status=status.HTTP_400_BAD_REQUEST)
+        actual_date = str(date.today())
+        if request.data.get("published_date") >= actual_date:
+            return Response({"error": "Published date must be in the past"}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = BookSerializer(data=request.data)
         if serializer.is_valid():
             try:
