@@ -12,6 +12,8 @@ class LibraryView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):
+        if len(request.data.get("isbn")) != 13:
+            return Response({"error": "ISBN must be 13 characters long"}, status=status.HTTP_400_BAD_REQUEST)
         serializer = BookSerializer(data=request.data)
         if serializer.is_valid():
             try:
