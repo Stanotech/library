@@ -16,8 +16,7 @@ class LibraryView(APIView):
     def get(self, request):
 
         books = Book.objects.all()
-        author = request.query_params.get('author', None)
-        if author:
+        if request.query_params.get('author', None):
             books = books.filter(author__icontains=author)
 
         paginator = CustomPagination()
