@@ -1,16 +1,30 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from datetime import date
 
 from library.models import Book
 from library.serializers import BookSerializer
 
+class CustomPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class LibraryView(APIView):
     def get(self, request):
+
         books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        author = request.query_params.get('author', None)
+        if author:
+            books = books.filter(author__icontains=author)
+
+        paginator = CustomPagination()
+        paginated_books = paginator.paginate_queryset(books, request)
+        serializer = BookSerializer(paginated_books, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     
     def post(self, request):
         if len(request.data.get("isbn")) != 13:
